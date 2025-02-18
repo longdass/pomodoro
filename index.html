@@ -1,597 +1,201 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pomodoro Countdown</title>
-  <link href="https://fonts.loli.net/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-color: #000000;
-      --text-color: #ffffff;
-      --card-bg: #222222;
-      --accent-color: #ff6347;
-      --button-bg: #333333;
-      --button-hover: #444444;
-    }
-
-    body {
-      font-family: "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      overflow: hidden;
-    }
-
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      max-width: 100%;
-    }
-
-    h1 {
-      font-size: 1.2rem;
-      letter-spacing: 2px;
-      margin-bottom: 0.3rem;
-      text-transform: uppercase;
-    }
-
-    .status {
-      margin-bottom: 1.5rem;
-      font-size: 0.6rem;
-      opacity: 0.8;
-      letter-spacing: 1px;
-    }
-
-    .flip-clock {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .flip-unit-container {
-      display: flex;
-      position: relative;
-      width: 180px;
-      height: 150px;
-      perspective: 500px;
-      background: var(--card-bg);
-      border-radius: 10px;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
-    }
-
-    .flip-digit {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      height: 100%;
-      font-size: 9rem;
-      font-weight: bold;
-      user-select: none;
-      font-family: Bebas Neue;
-      letter-spacing: 0.5rem;
-    }
-
-    .buttons {
-      display: flex;
-      gap: 1.5rem;
-      margin-top: 2.5rem;
-    }
-
-    .button {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background: var(--button-bg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    .button:hover {
-      background: var(--button-hover);
-    }
-
-    .button svg {
-      width: 24px;
-      height: 24px;
-      fill: var(--text-color);
-    }
-
-    .settings-panel {
-      position: fixed;
-      top: 0;
-      right: -300px;
-      width: 250px;
-      height: 100%;
-      background: #111;
-      padding: 1.5rem;
-      transition: right 0.3s ease;
-      z-index: 100;
-      overflow-y: auto;
-    }
-
-    .settings-panel.open {
-      right: 0;
-    }
-
-    .settings-button {
-      position: fixed;
-      top: 1rem;
-      right: 1rem;
-      z-index: 101;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      color: var(--text-color);
-    }
-
-    .settings-title {
-      margin-top: 0;
-      font-size: 1.2rem;
-      border-bottom: 1px solid #333;
-      padding-bottom: 0.5rem;
-    }
-
-    .setting-group {
-      margin-bottom: 1.5rem;
-    }
-
-    .setting-label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-size: 0.9rem;
-      opacity: 0.8;
-    }
-
-    .color-inputs {
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    input[type="color"] {
-      -webkit-appearance: none;
-      border: none;
-      width: 30px;
-      height: 30px;
-      cursor: pointer;
-    }
-
-    input[type="color"]::-webkit-color-swatch-wrapper {
-      padding: 0;
-    }
-
-    input[type="color"]::-webkit-color-swatch {
-      border: none;
-      border-radius: 4px;
-    }
-
-    input[type="number"] {
-      background: #333;
-      border: none;
-      color: white;
-      padding: 0.5rem;
-      width: 100%;
-      border-radius: 4px;
-    }
-
-    .timer-input {
-      width: 60px;
-      text-align: center;
-    }
-
-    .time-inputs {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .countdown-animation {
-      animation: flip 0.5s ease-in-out;
-      transform-style: preserve-3d;
-    }
-
-    @keyframes flip {
-      0% {
-        transform: rotateX(0deg);
-      }
-      50% {
-        transform: rotateX(90deg);
-      }
-      100% {
-        transform: rotateX(0deg);
-      }
-    }
-
-    /* Switch styling */
-    .switch-container {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 46px;
-      height: 24px;
-    }
-
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #333;
-      transition: .4s;
-      border-radius: 24px;
-    }
-
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 18px;
-      width: 18px;
-      left: 3px;
-      bottom: 3px;
-      background-color: white;
-      transition: .4s;
-      border-radius: 50%;
-    }
-
-    input:checked + .slider {
-      background-color: var(--accent-color);
-    }
-
-    input:checked + .slider:before {
-      transform: translateX(22px);
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=375px, initial-scale=1.0">
+<title>Pomodoro Timer</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Bebas+Neue&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet"/>
+<style>
+:where([class^="ri-"])::before { content: "\f3c2"; }
+@keyframes flipNumber {
+0% { transform: rotateX(0deg); }
+100% { transform: rotateX(360deg); }
+}
+.flip-card {
+perspective: 1000px;
+transform-style: preserve-3d;
+transition: transform 0.6s;
+}
+.flip-card.flipped {
+animation: flipNumber 0.6s ease-out;
+}
+</style>
+<script>
+tailwind.config = {
+theme: {
+extend: {
+colors: {
+primary: '#1a1a1a',
+secondary: '#404040'
+},
+borderRadius: {
+'none': '0px',
+'sm': '4px',
+DEFAULT: '8px',
+'md': '12px',
+'lg': '16px',
+'xl': '20px',
+'2xl': '24px',
+'3xl': '32px',
+'full': '9999px',
+'button': '8px'
+}
+}
+}
+}
+</script>
 </head>
-<body>
-  <button class="settings-button" id="settingsToggle">
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="3"></circle>
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-    </svg>
-  </button>
-
-  <div class="settings-panel" id="settingsPanel">
-    <h3 class="settings-title">Timer Settings</h3>
+<body class="w-[375px] h-[762px] bg-gradient-to-b from-primary to-black text-white flex flex-col items-center justify-center">
+<div class="text-center mb-12">
+<h1 class="font-['Pacifico'] text-3xl mb-3 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">Pomodoro</h1>
+<p class="text-gray-400 tracking-widest text-sm">READY TO FOCUS</p>
+<button class="mt-4 text-sm bg-secondary/80 hover:bg-secondary px-4 py-2 rounded-full transition-all duration-300 shadow-lg backdrop-blur-sm customize-btn">
+<i class="ri-settings-line mr-1"></i>Customize Time
+</button>
+</div>
+<div class="fixed inset-0 bg-black/50 items-center justify-center hidden customize-modal backdrop-blur-sm">
+<div class="bg-secondary/90 p-6 rounded-2xl w-80 backdrop-blur-sm">
+<h3 class="text-lg font-semibold mb-4">Set Custom Time</h3>
+<div class="flex gap-4 mb-6">
+<div class="flex-1">
+<label class="block text-sm text-gray-400 mb-2">Minutes</label>
+<input type="number" class="w-full bg-black/20 border border-gray-600 rounded-lg px-3 py-2 text-white custom-minutes" min="1" max="60" value="30">
+</div>
+<div class="flex-1">
+<label class="block text-sm text-gray-400 mb-2">Seconds</label>
+<input type="number" class="w-full bg-black/20 border border-gray-600 rounded-lg px-3 py-2 text-white custom-seconds" min="0" max="59" value="0">
+</div>
+</div>
+<div class="flex gap-3">
+<button class="flex-1 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-all duration-300 cancel-btn">Cancel</button>
+<button class="flex-1 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 transition-all duration-300 save-btn">Save</button>
+</div>
+</div>
+</div>
+<div class="timer-container flex flex-col gap-6 mb-16">
+<div class="flex gap-4">
+<div class="flip-card w-36 h-44 bg-secondary/80 rounded-2xl flex flex-col items-center justify-center shadow-lg backdrop-blur-sm">
+<span class="text-xs text-gray-400 uppercase tracking-widest mb-1">Minutes</span>
+<span class="text-9xl font-['Bebas_Neue'] minutes tracking-wider">30</span>
+</div>
+<div class="flip-card w-36 h-44 bg-secondary/80 rounded-2xl flex flex-col items-center justify-center shadow-lg backdrop-blur-sm">
+<span class="text-xs text-gray-400 uppercase tracking-widest mb-1">Seconds</span>
+<span class="text-9xl font-['Bebas_Neue'] seconds tracking-wider">00</span>
+</div>
+</div>
+</div>
+<div class="controls flex gap-10">
+<button class="w-14 h-14 rounded-full bg-secondary/80 hover:bg-secondary flex items-center justify-center stop-btn transition-all duration-300 shadow-lg backdrop-blur-sm">
+<i class="ri-stop-fill ri-2x"></i>
+</button>
+<button class="w-14 h-14 rounded-full bg-secondary/80 hover:bg-secondary flex items-center justify-center reset-btn transition-all duration-300 shadow-lg backdrop-blur-sm">
+<i class="ri-refresh-line ri-2x"></i>
+</button>
+<button class="w-14 h-14 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 flex items-center justify-center start-btn transition-all duration-300 shadow-lg">
+<i class="ri-play-fill ri-2x"></i>
+</button>
+</div>
+<script>
+let minutes = 30;
+let seconds = 0;
+let timerInterval;
+let isRunning = false;
+const minutesDisplay = document.querySelector('.minutes');
+const secondsDisplay = document.querySelector('.seconds');
+const startBtn = document.querySelector('.start-btn');
+const stopBtn = document.querySelector('.stop-btn');
+const resetBtn = document.querySelector('.reset-btn');
+const customizeBtn = document.querySelector('.customize-btn');
+const customizeModal = document.querySelector('.customize-modal');
+const cancelBtn = document.querySelector('.cancel-btn');
+const saveBtn = document.querySelector('.save-btn');
+const customMinutesInput = document.querySelector('.custom-minutes');
+const customSecondsInput = document.querySelector('.custom-seconds');
+function updateDisplay() {
+minutesDisplay.textContent = minutes.toString().padStart(2, '0');
+secondsDisplay.textContent = seconds.toString().padStart(2, '0');
+}
+function startTimer() {
+if (!isRunning) {
+isRunning = true;
+startBtn.innerHTML = '<i class="ri-pause-fill ri-xl"></i>';
+timerInterval = setInterval(() => {
+if (seconds === 0) {
+if (minutes === 0) {
+clearInterval(timerInterval);
+isRunning = false;
+startBtn.innerHTML = '<i class="ri-play-fill ri-xl"></i>';
+return;
+}
+minutes--;
+seconds = 59;
+} else {
+seconds--;
+}
+updateDisplay();
+}, 1000);
+} else {
+clearInterval(timerInterval);
+isRunning = false;
+startBtn.innerHTML = '<i class="ri-play-fill ri-xl"></i>';
+}
+}
+function stopTimer() {
+clearInterval(timerInterval);
+isRunning = false;
+minutes = 30;
+seconds = 0;
+updateDisplay();
+startBtn.innerHTML = '<i class="ri-play-fill ri-xl"></i>';
+}
+function resetTimer() {
+clearInterval(timerInterval);
+isRunning = false;
+minutes = 30;
+seconds = 0;
+updateDisplay();
+startBtn.innerHTML = '<i class="ri-play-fill ri-xl"></i>';
+}
+startBtn.addEventListener('click', startTimer);
+stopBtn.addEventListener('click', stopTimer);
+resetBtn.addEventListener('click', resetTimer);
+customizeBtn.addEventListener('click', () => {
+    customizeModal.classList.remove('hidden');
+    customizeModal.classList.add('flex');
+    customMinutesInput.value = minutes;
+    customSecondsInput.value = seconds;
+});
+cancelBtn.addEventListener('click', () => {
+    customizeModal.classList.add('hidden');
+    customizeModal.classList.remove('flex');
+});
+saveBtn.addEventListener('click', () => {
+    const newMinutes = parseInt(customMinutesInput.value);
+    const newSeconds = parseInt(customSecondsInput.value);
     
-    <div class="setting-group">
-      <label class="setting-label">Pomodoro (minutes)</label>
-      <input type="number" id="pomodoroMinutes" value="25" min="1" max="60">
-    </div>
+    if (newMinutes < 1 || newMinutes > 60 || newSeconds < 0 || newSeconds > 59) {
+        return;
+    }
     
-    <div class="setting-group">
-      <label class="setting-label">Short Break (minutes)</label>
-      <input type="number" id="shortBreakMinutes" value="5" min="1" max="30">
-    </div>
-    
-    <div class="setting-group">
-      <label class="setting-label">Long Break (minutes)</label>
-      <input type="number" id="longBreakMinutes" value="15" min="1" max="60">
-    </div>
-    
-    <div class="setting-group">
-      <label class="setting-label">Long Break Interval</label>
-      <input type="number" id="longBreakInterval" value="4" min="1" max="10">
-    </div>
-    
-    <h3 class="settings-title">Appearance</h3>
-    
-    <div class="setting-group">
-      <label class="setting-label">Background Color</label>
-      <input type="color" id="bgColor" value="#000000">
-    </div>
-    
-    <div class="setting-group">
-      <label class="setting-label">Text Color</label>
-      <input type="color" id="textColor" value="#ffffff">
-    </div>
-    
-    <div class="setting-group">
-      <label class="setting-label">Card Background</label>
-      <input type="color" id="cardBg" value="#222222">
-    </div>
-    
-    <div class="setting-group">
-      <label class="setting-label">Accent Color</label>
-      <input type="color" id="accentColor" value="#ff6347">
-    </div>
-    
-    <div class="setting-group">
-      <label class="setting-label">Sound</label>
-      <select id="alarmSound" class="timer-input">
-        <option value="bell">Bell</option>
-        <option value="digital">Digital</option>
-        <option value="none">None</option>
-      </select>
-    </div>
-    
-    <div class="setting-group">
-      <div class="switch-container">
-        <label class="setting-label">Flip Animation</label>
-        <label class="switch">
-          <input type="checkbox" id="flipAnimationToggle" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
-    </div>
-  </div>
-
-  <div class="container">
-    <h1 id="title">POMODORO</h1>
-    <div class="status" id="status">READY</div>
-    
-    <div class="flip-clock">
-      <div class="flip-unit-container" id="minutesContainer">
-        <div class="flip-digit" id="minutesDisplay">25</div>
-      </div>
-      
-      <div class="flip-unit-container" id="secondsContainer">
-        <div class="flip-digit" id="secondsDisplay">00</div>
-      </div>
-    </div>
-    
-    <div class="buttons">
-      <div class="button" id="resetButton">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <path d="M0 0h24v24H0z" fill="none"/>
-          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-        </svg>
-      </div>
-      
-      <div class="button" id="resetButton">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <path d="M0 0h24v24H0z" fill="none"/>
-          <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
-        </svg>
-      </div>
-      
-      <div class="button" id="startButton">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <path d="M0 0h24v24H0z" fill="none"/>
-          <path d="M8 5v14l11-7z"/>
-        </svg>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // DOM Elements
-    const minutesDisplay = document.getElementById('minutesDisplay');
-    const secondsDisplay = document.getElementById('secondsDisplay');
-    const startButton = document.getElementById('startButton');
-    const resetButton = document.getElementById('resetButton');
-    const statusElement = document.getElementById('status');
-    const titleElement = document.getElementById('title');
-    const settingsToggle = document.getElementById('settingsToggle');
-    const settingsPanel = document.getElementById('settingsPanel');
-    const flipAnimationToggle = document.getElementById('flipAnimationToggle');
-    
-    // Settings Elements
-    const pomodoroMinutesInput = document.getElementById('pomodoroMinutes');
-    const shortBreakMinutesInput = document.getElementById('shortBreakMinutes');
-    const longBreakMinutesInput = document.getElementById('longBreakMinutes');
-    const longBreakIntervalInput = document.getElementById('longBreakInterval');
-    const bgColorInput = document.getElementById('bgColor');
-    const textColorInput = document.getElementById('textColor');
-    const cardBgInput = document.getElementById('cardBg');
-    const accentColorInput = document.getElementById('accentColor');
-    const alarmSoundSelect = document.getElementById('alarmSound');
-    
-    // Timer variables
-    let timer;
-    let minutes = parseInt(pomodoroMinutesInput.value);
-    let seconds = 0;
-    let isRunning = false;
-    let mode = 'pomodoro'; // 'pomodoro', 'shortBreak', 'longBreak'
-    let completedPomodoros = 0;
-    
-    // Sounds
-    const bellSound = new Audio('data:audio/wav;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAADAAAGhgBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVWqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr///////////////////////////////////////////8AAAA8TEFNRTMuOTlyAc0AAAAAAAAAABSAJAJAQgAAgAAAAYaLhLpmAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//uQxAADwAABpAAAACAAADSAAAAETEFNRTMuOTkuNVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVU=');
-    const digitalSound = new Audio('data:audio/wav;base64,//uQxAADwAABpAAAACAAADSAAAAETEFNRTMuOTkuNVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVU=');
-    
-    // Initialize display
+    minutes = newMinutes;
+    seconds = newSeconds;
     updateDisplay();
-    
-    // Event listeners
-    startButton.addEventListener('click', toggleTimer);
-    resetButton.addEventListener('click', resetTimer);
-    settingsToggle.addEventListener('click', toggleSettings);
-    
-    // Settings event listeners
-    pomodoroMinutesInput.addEventListener('change', updateSettings);
-    shortBreakMinutesInput.addEventListener('change', updateSettings);
-    longBreakMinutesInput.addEventListener('change', updateSettings);
-    longBreakIntervalInput.addEventListener('change', updateSettings);
-    bgColorInput.addEventListener('change', updateColors);
-    textColorInput.addEventListener('change', updateColors);
-    cardBgInput.addEventListener('change', updateColors);
-    accentColorInput.addEventListener('change', updateColors);
-    
-    function toggleTimer() {
-      if (isRunning) {
-        clearInterval(timer);
-        isRunning = false;
-        statusElement.textContent = 'PAUSED';
-        updateStartButtonIcon(false);
-      } else {
-        timer = setInterval(countdown, 1000);
-        isRunning = true;
-        statusElement.textContent = mode.toUpperCase() + ' RUNNING';
-        updateStartButtonIcon(true);
-      }
-    }
-    
-    function countdown() {
-      if (seconds === 0) {
-        if (minutes === 0) {
-          clearInterval(timer);
-          isRunning = false;
-          playAlarmSound();
-          
-          if (mode === 'pomodoro') {
-            completedPomodoros++;
-            if (completedPomodoros % parseInt(longBreakIntervalInput.value) === 0) {
-              switchMode('longBreak');
-            } else {
-              switchMode('shortBreak');
-            }
-          } else {
-            switchMode('pomodoro');
-          }
-          
-          updateStartButtonIcon(false);
-          return;
-        }
-        minutes--;
-        seconds = 59;
-      } else {
-        seconds--;
-      }
-      
-      if (flipAnimationToggle.checked) {
-        updateDisplayWithAnimation();
-      } else {
-        updateDisplay();
-      }
-    }
-    
-    function resetTimer() {
-      clearInterval(timer);
-      isRunning = false;
-      switchMode(mode, true); // Reset to current mode
-      statusElement.textContent = 'READY';
-      updateStartButtonIcon(false);
-    }
-    
-    function switchMode(newMode, isReset = false) {
-      mode = newMode;
-      
-      if (mode === 'pomodoro') {
-        minutes = parseInt(pomodoroMinutesInput.value);
-        titleElement.textContent = 'POMODORO';
-        document.documentElement.style.setProperty('--accent-color', accentColorInput.value);
-      } else if (mode === 'shortBreak') {
-        minutes = parseInt(shortBreakMinutesInput.value);
-        titleElement.textContent = 'SHORT BREAK';
-        document.documentElement.style.setProperty('--accent-color', '#4CAF50');
-      } else if (mode === 'longBreak') {
-        minutes = parseInt(longBreakMinutesInput.value);
-        titleElement.textContent = 'LONG BREAK';
-        document.documentElement.style.setProperty('--accent-color', '#2196F3');
-      }
-      
-      seconds = 0;
-      
-      if (!isReset) {
-        statusElement.textContent = 'READY';
-      }
-      
-      updateDisplay();
-    }
-    
-    function updateDisplay() {
-      minutesDisplay.textContent = formatTime(minutes);
-      secondsDisplay.textContent = formatTime(seconds);
-    }
-    
-    function updateDisplayWithAnimation() {
-      // Only animate the changing unit
-      if (seconds === 59) {
-        // Minutes changed
-        minutesDisplay.classList.add('countdown-animation');
-        setTimeout(() => {
-          minutesDisplay.textContent = formatTime(minutes);
-          setTimeout(() => {
-            minutesDisplay.classList.remove('countdown-animation');
-          }, 500);
-        }, 250);
-      }
-      
-      secondsDisplay.classList.add('countdown-animation');
-      setTimeout(() => {
-        secondsDisplay.textContent = formatTime(seconds);
-        setTimeout(() => {
-          secondsDisplay.classList.remove('countdown-animation');
-        }, 500);
-      }, 250);
-    }
-    
-    function formatTime(time) {
-      return time < 10 ? `0${time}` : time;
-    }
-    
-    function updateStartButtonIcon(isRunning) {
-      if (isRunning) {
-        startButton.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M0 0h24v24H0z" fill="none"/>
-            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-          </svg>
-        `;
-      } else {
-        startButton.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M0 0h24v24H0z" fill="none"/>
-            <path d="M8 5v14l11-7z"/>
-          </svg>
-        `;
-      }
-    }
-    
-    function toggleSettings() {
-      settingsPanel.classList.toggle('open');
-    }
-    
-    function updateSettings() {
-      // Update timer if not running
-      if (!isRunning) {
-        switchMode(mode, true);
-      }
-    }
-    
-    function updateColors() {
-      document.documentElement.style.setProperty('--bg-color', bgColorInput.value);
-      document.documentElement.style.setProperty('--text-color', textColorInput.value);
-      document.documentElement.style.setProperty('--card-bg', cardBgInput.value);
-      
-      if (mode === 'pomodoro') {
-        document.documentElement.style.setProperty('--accent-color', accentColorInput.value);
-      }
-    }
-    
-    function playAlarmSound() {
-      const selectedSound = alarmSoundSelect.value;
-      if (selectedSound === 'bell') {
-        bellSound.play();
-      } else if (selectedSound === 'digital') {
-        digitalSound.play();
-      }
-    }
-    
-    // Apply initial colors
-    updateColors();
-  </script>
+    customizeModal.classList.add('hidden');
+    customizeModal.classList.remove('flex');
+});
+customMinutesInput.addEventListener('input', (e) => {
+    if (e.target.value < 1) e.target.value = 1;
+    if (e.target.value > 60) e.target.value = 60;
+});
+customSecondsInput.addEventListener('input', (e) => {
+    if (e.target.value < 0) e.target.value = 0;
+    if (e.target.value > 59) e.target.value = 59;
+});
+updateDisplay();
+</script>
 </body>
 </html>
