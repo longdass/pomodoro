@@ -9,7 +9,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Bebas+Neue&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet"/>
-<link href="https://fonts.loli.net/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
 :where([class^="ri-"])::before { content: "\f3c2"; }
 @keyframes flipNumber {
@@ -52,14 +51,11 @@ DEFAULT: '8px',
 </head>
 <body class="w-[375px] h-[762px] bg-gradient-to-b from-primary to-black text-white flex flex-col items-center justify-center">
 <div class="text-center mb-12">
-<h1 class="font-['Pacifico'] text-3xl mb-3 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">Pomodoro</h1>
-<p class="text-gray-400 tracking-widest text-sm">READY TO FOCUS</p>
-<button class="mt-4 text-sm bg-secondary/80 hover:bg-secondary px-4 py-2 rounded-full transition-all duration-300 shadow-lg backdrop-blur-sm customize-btn">
-<i class="ri-settings-line mr-1"></i>Customize Time
-</button>
+<h1 class="font-['Pacifico'] text-3xl mb-3 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">Countdown</h1>
+<p class="text-gray-400 tracking-widest text-sm">行行专用的倒计时</p>
 </div>
-<div class="fixed inset-0 bg-black/50 items-center justify-center hidden customize-modal backdrop-blur-sm">
-<div class="bg-secondary/90 p-6 rounded-2xl w-80 backdrop-blur-sm">
+<div class="fixed inset-0 bg-black/50 items-center justify-center hidden customize-modal backdrop-blur-sm z-50">
+<div class="bg-secondary/90 p-6 rounded-2xl w-80 backdrop-blur-sm relative">
 <h3 class="text-lg font-semibold mb-4">Set Custom Time</h3>
 <div class="flex gap-4 mb-6">
 <div class="flex-1">
@@ -80,11 +76,11 @@ DEFAULT: '8px',
 <div class="timer-container flex flex-col gap-6 mb-16">
 <div class="flex gap-4">
 <div class="flip-card w-36 h-44 bg-secondary/80 rounded-2xl flex flex-col items-center justify-center shadow-lg backdrop-blur-sm">
-<span class="text-xs text-gray-400 uppercase tracking-widest mb-1">Minutes</span>
+<span class="text-xs text-gray-400 uppercase tracking-widest mb-1"></span>
 <span class="text-9xl font-['Bebas_Neue'] minutes tracking-wider">30</span>
 </div>
 <div class="flip-card w-36 h-44 bg-secondary/80 rounded-2xl flex flex-col items-center justify-center shadow-lg backdrop-blur-sm">
-<span class="text-xs text-gray-400 uppercase tracking-widest mb-1">Seconds</span>
+<span class="text-xs text-gray-400 uppercase tracking-widest mb-1"></span>
 <span class="text-9xl font-['Bebas_Neue'] seconds tracking-wider">00</span>
 </div>
 </div>
@@ -93,8 +89,8 @@ DEFAULT: '8px',
 <button class="w-14 h-14 rounded-full bg-secondary/80 hover:bg-secondary flex items-center justify-center stop-btn transition-all duration-300 shadow-lg backdrop-blur-sm">
 <i class="ri-stop-fill ri-2x"></i>
 </button>
-<button class="w-14 h-14 rounded-full bg-secondary/80 hover:bg-secondary flex items-center justify-center reset-btn transition-all duration-300 shadow-lg backdrop-blur-sm">
-<i class="ri-refresh-line ri-2x"></i>
+<button class="w-14 h-14 rounded-full bg-secondary/80 hover:bg-secondary flex items-center justify-center customize-btn transition-all duration-300 shadow-lg backdrop-blur-sm">
+<i class="ri-settings-line ri-2x"></i>
 </button>
 <button class="w-14 h-14 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 flex items-center justify-center start-btn transition-all duration-300 shadow-lg">
 <i class="ri-play-fill ri-2x"></i>
@@ -153,48 +149,40 @@ seconds = 0;
 updateDisplay();
 startBtn.innerHTML = '<i class="ri-play-fill ri-xl"></i>';
 }
-function resetTimer() {
-clearInterval(timerInterval);
-isRunning = false;
-minutes = 30;
-seconds = 0;
-updateDisplay();
-startBtn.innerHTML = '<i class="ri-play-fill ri-xl"></i>';
-}
 startBtn.addEventListener('click', startTimer);
 stopBtn.addEventListener('click', stopTimer);
-resetBtn.addEventListener('click', resetTimer);
 customizeBtn.addEventListener('click', () => {
-    customizeModal.classList.remove('hidden');
-    customizeModal.classList.add('flex');
-    customMinutesInput.value = minutes;
-    customSecondsInput.value = seconds;
+customizeModal.classList.remove('hidden');
+customizeModal.classList.add('flex');
+customMinutesInput.value = minutes;
+customSecondsInput.value = seconds;
+document.body.style.overflow = 'hidden';
 });
 cancelBtn.addEventListener('click', () => {
-    customizeModal.classList.add('hidden');
-    customizeModal.classList.remove('flex');
+customizeModal.classList.add('hidden');
+customizeModal.classList.remove('flex');
+document.body.style.overflow = 'auto';
 });
 saveBtn.addEventListener('click', () => {
-    const newMinutes = parseInt(customMinutesInput.value);
-    const newSeconds = parseInt(customSecondsInput.value);
-    
-    if (newMinutes < 1 || newMinutes > 60 || newSeconds < 0 || newSeconds > 59) {
-        return;
-    }
-    
-    minutes = newMinutes;
-    seconds = newSeconds;
-    updateDisplay();
-    customizeModal.classList.add('hidden');
-    customizeModal.classList.remove('flex');
+const newMinutes = parseInt(customMinutesInput.value);
+const newSeconds = parseInt(customSecondsInput.value);
+if (newMinutes < 1 || newMinutes > 60 || newSeconds < 0 || newSeconds > 59) {
+return;
+}
+minutes = newMinutes;
+seconds = newSeconds;
+updateDisplay();
+customizeModal.classList.add('hidden');
+customizeModal.classList.remove('flex');
+document.body.style.overflow = 'auto';
 });
 customMinutesInput.addEventListener('input', (e) => {
-    if (e.target.value < 1) e.target.value = 1;
-    if (e.target.value > 60) e.target.value = 60;
+if (e.target.value < 1) e.target.value = 1;
+if (e.target.value > 60) e.target.value = 60;
 });
 customSecondsInput.addEventListener('input', (e) => {
-    if (e.target.value < 0) e.target.value = 0;
-    if (e.target.value > 59) e.target.value = 59;
+if (e.target.value < 0) e.target.value = 0;
+if (e.target.value > 59) e.target.value = 59;
 });
 updateDisplay();
 </script>
