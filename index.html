@@ -1,190 +1,922 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=375px, initial-scale=1.0">
-<title>行行计时器</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Bebas+Neue&display=swap" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet"/>
-<style>
-:where([class^="ri-"])::before { content: "\f3c2"; }
-@keyframes flipNumber {
-0% { transform: rotateX(0deg); }
-100% { transform: rotateX(360deg); }
-}
-.flip-card {
-perspective: 1000px;
-transform-style: preserve-3d;
-transition: transform 0.6s;
-}
-.flip-card.flipped {
-animation: flipNumber 0.6s ease-out;
-}
-</style>
-<script>
-tailwind.config = {
-theme: {
-extend: {
-colors: {
-primary: '#1a1a1a',
-secondary: '#404040'
-},
-borderRadius: {
-'none': '0px',
-'sm': '4px',
-DEFAULT: '8px',
-'md': '12px',
-'lg': '16px',
-'xl': '20px',
-'2xl': '24px',
-'3xl': '32px',
-'full': '9999px',
-'button': '8px'
-}
-}
-}
-}
-</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown Clock</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --accent-color: #4fc3dc;
+            --light-color: #e9f5fb;
+            --dark-color: #333;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(45deg, #4a6fa5, #166088);
+            transition: background 0.5s ease;
+            overflow: hidden;
+        }
+
+        .container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 90%;
+            max-width: 600px;
+            z-index: 1;
+            overflow: hidden;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -50%;
+            width: 200%;
+            height: 5px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+            animation: animate-border 2s linear infinite;
+        }
+
+        @keyframes animate-border {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .timer {
+            display: flex;
+            justify-content: center;
+            margin: 40px 0;
+            width: 100%;
+            position: relative;
+        }
+
+        .time-segment {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 15px;
+            position: relative;
+        }
+
+        .time-value {
+            font-size: 6.5rem;
+            font-weight: bold;
+            color: var(--light-color);
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 20px 10px;
+            min-width: 160px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .time-value::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px 15px 0 0;
+        }
+
+        .time-value.pulse {
+            animation: pulse 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .time-label {
+            font-size: 1.2rem;
+            color: var(--light-color);
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .time-label::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 2px;
+            background: var(--accent-color);
+        }
+
+        .time-separator {
+            font-size: 6rem;
+            color: var(--light-color);
+            display: flex;
+            align-items: center;
+            padding-bottom: 20px;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 40px;
+            width: 100%;
+        }
+
+        .btn {
+            padding: 15px 35px;
+            border: none;
+            border-radius: 50px;
+            background: var(--light-color);
+            color: var(--dark-color);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            outline: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.4s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-start-pause {
+            background-color: var(--success-color);
+            color: white;
+            min-width: 140px;
+        }
+
+        .btn-pause {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-stop {
+            background-color: var(--danger-color);
+            color: white;
+            min-width: 140px;
+        }
+
+        .btn-refresh {
+            background-color: var(--accent-color);
+            color: var(--dark-color);
+            min-width: 140px;
+        }
+
+        .btn-set {
+            background-color: var(--accent-color);
+            color: var(--dark-color);
+            min-width: 140px;
+        }
+
+        .btn i {
+            margin-right: 10px;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            color: var(--dark-color);
+            text-align: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 35px;
+            justify-content: space-between;
+        }
+
+        .input-field {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .input-field label {
+            font-size: 1rem;
+            margin-bottom: 8px;
+            color: var(--dark-color);
+        }
+
+        .input-field input {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1.3rem;
+            text-align: center;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .floating-bubbles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: rise 15s infinite linear;
+        }
+
+        @keyframes rise {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+                border-radius: 0;
+            }
+            100% {
+                transform: translateY(-1000px) rotate(720deg);
+                opacity: 0;
+                border-radius: 50%;
+            }
+        }
+
+        .progress-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-90deg);
+            z-index: -1;
+        }
+
+        .background-circle {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.05);
+            stroke-width: 8;
+        }
+
+        .progress-circle {
+            fill: none;
+            stroke: var(--accent-color);
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .time-value {
+                font-size: 4rem;
+                min-width: 120px;
+                padding: 15px 5px;
+            }
+            
+            .time-separator {
+                font-size: 4rem;
+            }
+            
+            .time-label {
+                font-size: 1rem;
+            }
+            
+            .btn {
+                padding: 12px 25px;
+                font-size: 1rem;
+            }
+            
+            .container {
+                padding: 30px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .time-value {
+                font-size: 3rem;
+                min-width: 90px;
+                padding: 10px 5px;
+            }
+            
+            .time-separator {
+                font-size: 3rem;
+            }
+            
+            .time-segment {
+                margin: 0 8px;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+                min-width: auto;
+            }
+            
+            .timer {
+                margin: 20px 0;
+            }
+        }
+
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: var(--success-color);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateX(200%);
+            transition: transform 0.3s ease;
+            z-index: 999;
+        }
+
+        .alert.show {
+            transform: translateX(0);
+        }
+
+        .alert.error {
+            background: var(--danger-color);
+        }
+
+        /* Theme toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--light-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 10;
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(30deg);
+        }
+
+        .dark-theme {
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+        }
+
+        .light-theme {
+            background: linear-gradient(45deg, #8bd8bd, #3da5d9);
+        }
+
+        .purple-theme {
+            background: linear-gradient(45deg, #5f27cd, #9b59b6);
+        }
+
+        .theme-selector {
+            position: absolute;
+            top: 20px;
+            right: 70px;
+            display: flex;
+            gap: 10px;
+            opacity: 0;
+            transform: translateX(20px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .theme-selector.show {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
+        }
+
+        .theme-option {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid var(--light-color);
+            transition: transform 0.3s ease;
+        }
+
+        .theme-option:hover {
+            transform: scale(1.2);
+        }
+
+        .theme-blue {
+            background: linear-gradient(45deg, #4a6fa5, #166088);
+        }
+
+        .theme-dark {
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+        }
+
+        .theme-light {
+            background: linear-gradient(45deg, #8bd8bd, #3da5d9);
+        }
+
+        .theme-purple {
+            background: linear-gradient(45deg, #5f27cd, #9b59b6);
+        }
+    </style>
 </head>
-<body class="w-[375px] h-[762px] bg-gradient-to-b from-primary to-black text-white flex flex-col items-center justify-center">
-<div class="text-center mb-12">
-<h1 class="font-['Pacifico'] text-3xl mb-3 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">Countdown</h1>
-<p class="text-gray-400 tracking-widest text-sm">行行专用的倒计时</p>
-</div>
-<div class="fixed inset-0 bg-black/50 items-center justify-center hidden customize-modal backdrop-blur-sm z-50">
-<div class="bg-secondary/90 p-6 rounded-2xl w-80 backdrop-blur-sm relative">
-<h3 class="text-lg font-semibold mb-4">Set Custom Time</h3>
-<div class="flex gap-4 mb-6">
-<div class="flex-1">
-<label class="block text-sm text-gray-400 mb-2">Minutes</label>
-<input type="number" class="w-full bg-black/20 border border-gray-600 rounded-lg px-3 py-2 text-white custom-minutes" min="1" max="60" value="30">
-</div>
-<div class="flex-1">
-<label class="block text-sm text-gray-400 mb-2">Seconds</label>
-<input type="number" class="w-full bg-black/20 border border-gray-600 rounded-lg px-3 py-2 text-white custom-seconds" min="0" max="59" value="0">
-</div>
-</div>
-<div class="flex gap-3">
-<button class="flex-1 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-all duration-300 cancel-btn">Cancel</button>
-<button class="flex-1 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 transition-all duration-300 save-btn">Save</button>
-</div>
-</div>
-</div>
-<div class="timer-container flex flex-col gap-6 mb-16">
-<div class="flex gap-4">
-<div class="flip-card w-36 h-44 bg-secondary/80 rounded-2xl flex flex-col items-center justify-center shadow-lg backdrop-blur-sm">
-<span class="text-xs text-gray-400 uppercase tracking-widest mb-1"></span>
-<span class="text-9xl font-['Bebas_Neue'] minutes tracking-wider">30</span>
-</div>
-<div class="flip-card w-36 h-44 bg-secondary/80 rounded-2xl flex flex-col items-center justify-center shadow-lg backdrop-blur-sm">
-<span class="text-xs text-gray-400 uppercase tracking-widest mb-1"></span>
-<span class="text-9xl font-['Bebas_Neue'] seconds tracking-wider">00</span>
-</div>
-</div>
-</div>
-<div class="controls flex gap-10">
-<button class="w-14 h-14 rounded-full bg-secondary/80 hover:bg-secondary flex items-center justify-center stop-btn transition-all duration-300 shadow-lg backdrop-blur-sm">
-<i class="ri-stop-fill ri-2x"></i>
-</button>
-<button class="w-14 h-14 rounded-full bg-secondary/80 hover:bg-secondary flex items-center justify-center customize-btn transition-all duration-300 shadow-lg backdrop-blur-sm">
-<i class="ri-settings-line ri-2x"></i>
-</button>
-<button class="w-14 h-14 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 flex items-center justify-center start-btn transition-all duration-300 shadow-lg">
-<i class="ri-play-fill ri-2x"></i>
-</button>
-</div>
-<script>
-let minutes = 30;
-let seconds = 0;
-let timerInterval;
-let isRunning = false;
-const minutesDisplay = document.querySelector('.minutes');
-const secondsDisplay = document.querySelector('.seconds');
-const startBtn = document.querySelector('.start-btn');
-const stopBtn = document.querySelector('.stop-btn');
-const resetBtn = document.querySelector('.reset-btn');
-const customizeBtn = document.querySelector('.customize-btn');
-const customizeModal = document.querySelector('.customize-modal');
-const cancelBtn = document.querySelector('.cancel-btn');
-const saveBtn = document.querySelector('.save-btn');
-const customMinutesInput = document.querySelector('.custom-minutes');
-const customSecondsInput = document.querySelector('.custom-seconds');
-function updateDisplay() {
-minutesDisplay.textContent = minutes.toString().padStart(2, '0');
-secondsDisplay.textContent = seconds.toString().padStart(2, '0');
-}
-function startTimer() {
-if (!isRunning) {
-isRunning = true;
-startBtn.innerHTML = '<i class="ri-pause-fill ri-xl"></i>';
-timerInterval = setInterval(() => {
-if (seconds === 0) {
-if (minutes === 0) {
-clearInterval(timerInterval);
-isRunning = false;
-startBtn.innerHTML = '<i class="ri-play-fill ri-xl"></i>';
-return;
-}
-minutes--;
-seconds = 59;
-} else {
-seconds--;
-}
-updateDisplay();
-}, 1000);
-} else {
-clearInterval(timerInterval);
-isRunning = false;
-startBtn.innerHTML = '<i class="ri-play-fill ri-xl"></i>';
-}
-}
-function stopTimer() {
-clearInterval(timerInterval);
-isRunning = false;
-minutes = 30;
-seconds = 0;
-updateDisplay();
-startBtn.innerHTML = '<i class="ri-play-fill ri-xl"></i>';
-}
-startBtn.addEventListener('click', startTimer);
-stopBtn.addEventListener('click', stopTimer);
-customizeBtn.addEventListener('click', () => {
-customizeModal.classList.remove('hidden');
-customizeModal.classList.add('flex');
-customMinutesInput.value = minutes;
-customSecondsInput.value = seconds;
-document.body.style.overflow = 'hidden';
-});
-cancelBtn.addEventListener('click', () => {
-customizeModal.classList.add('hidden');
-customizeModal.classList.remove('flex');
-document.body.style.overflow = 'auto';
-});
-saveBtn.addEventListener('click', () => {
-const newMinutes = parseInt(customMinutesInput.value);
-const newSeconds = parseInt(customSecondsInput.value);
-if (newMinutes < 1 || newMinutes > 60 || newSeconds < 0 || newSeconds > 59) {
-return;
-}
-minutes = newMinutes;
-seconds = newSeconds;
-updateDisplay();
-customizeModal.classList.add('hidden');
-customizeModal.classList.remove('flex');
-document.body.style.overflow = 'auto';
-});
-customMinutesInput.addEventListener('input', (e) => {
-if (e.target.value < 1) e.target.value = 1;
-if (e.target.value > 60) e.target.value = 60;
-});
-customSecondsInput.addEventListener('input', (e) => {
-if (e.target.value < 0) e.target.value = 0;
-if (e.target.value > 59) e.target.value = 59;
-});
-updateDisplay();
-</script>
+<body>
+    <div class="floating-bubbles">
+        <!-- Bubbles will be added via JavaScript -->
+    </div>
+
+    <button class="theme-toggle" id="themeToggle">🎨</button>
+    <div class="theme-selector" id="themeSelector">
+        <div class="theme-option theme-blue" data-theme="blue"></div>
+        <div class="theme-option theme-dark" data-theme="dark"></div>
+        <div class="theme-option theme-light" data-theme="light"></div>
+        <div class="theme-option theme-purple" data-theme="purple"></div>
+    </div>
+
+    <div class="container">
+        <h1 style="color: var(--light-color); margin-bottom: 20px; text-align: center;">Countdown Timer</h1>
+        
+        <div class="timer">
+            <svg class="progress-ring" width="400" height="400">
+                <circle class="background-circle" cx="200" cy="200" r="180"/>
+                <circle class="progress-circle" cx="200" cy="200" r="180" id="progressRing"/>
+            </svg>
+            <div class="time-segment">
+                <div class="time-value" id="minutes">30</div>
+                <div class="time-label">Minutes</div>
+            </div>
+            <div class="time-separator">:</div>
+            <div class="time-segment">
+                <div class="time-value" id="seconds">00</div>
+                <div class="time-label">Seconds</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-start-pause" id="startPauseBtn">
+                <i>▶</i> Start
+            </button>
+            <button class="btn btn-stop" id="stopBtn">
+                <i>⏹</i> Stop
+            </button>
+            <button class="btn btn-set" id="setBtn">
+                <i>⚙</i> Set Time
+            </button>
+        </div>
+    </div>
+
+    <div class="modal" id="setTimeModal">
+        <div class="modal-content">
+            <h2 class="modal-title">Set Countdown Time</h2>
+            <div class="input-group">
+                <div class="input-field">
+                    <label for="minutesInput">Minutes</label>
+                    <input type="number" id="minutesInput" min="0" max="99" value="30">
+                </div>
+                <div class="input-field">
+                    <label for="secondsInput">Seconds</label>
+                    <input type="number" id="secondsInput" min="0" max="59" value="0">
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn" id="cancelSetTime">Cancel</button>
+                <button class="btn btn-set" id="confirmSetTime">Set Time</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert" id="alert"></div>
+
+    <script>
+        // DOM Elements
+        const minutesEl = document.getElementById('minutes');
+        const secondsEl = document.getElementById('seconds');
+        const startPauseBtn = document.getElementById('startPauseBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const setBtn = document.getElementById('setBtn');
+        const setTimeModal = document.getElementById('setTimeModal');
+        const minutesInput = document.getElementById('minutesInput');
+        const secondsInput = document.getElementById('secondsInput');
+        const cancelSetTime = document.getElementById('cancelSetTime');
+        const confirmSetTime = document.getElementById('confirmSetTime');
+        const alertEl = document.getElementById('alert');
+        const bubblesContainer = document.querySelector('.floating-bubbles');
+        const progressRing = document.getElementById('progressRing');
+        const themeToggle = document.getElementById('themeToggle');
+        const themeSelector = document.getElementById('themeSelector');
+        const themeOptions = document.querySelectorAll('.theme-option');
+
+        // Timer variables
+        let totalSeconds = 30 * 60; // Default: 30 minutes
+        let countdownInterval = null;
+        let isPaused = false;
+        let initialTime = totalSeconds;
+        let currentTheme = 'blue'; // Store current theme
+
+        // Set up progress ring
+        const radius = progressRing.getAttribute('r');
+        const circumference = 2 * Math.PI * radius;
+        progressRing.style.strokeDasharray = `${circumference} ${circumference}`;
+        progressRing.style.strokeDashoffset = circumference;
+
+        // Update progress ring
+        function setProgress(percent) {
+            const offset = circumference - (percent / 100 * circumference);
+            progressRing.style.strokeDashoffset = offset;
+        }
+
+        // Create floating bubbles
+        function createBubbles() {
+            bubblesContainer.innerHTML = '';
+            for (let i = 0; i < 15; i++) {
+                const size = Math.random() * 80 + 20;
+                const bubble = document.createElement('div');
+                bubble.classList.add('bubble');
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                bubble.style.left = `${Math.random() * 100}%`;
+                bubble.style.animationDelay = `${Math.random() * 15}s`;
+                bubble.style.animationDuration = `${Math.random() * 10 + 10}s`;
+                bubblesContainer.appendChild(bubble);
+            }
+        }
+
+        // Update the timer display
+        function updateDisplay() {
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            
+            minutesEl.textContent = minutes.toString().padStart(2, '0');
+            secondsEl.textContent = seconds.toString().padStart(2, '0');
+            
+            // Update progress ring
+            const progressPercent = (totalSeconds / initialTime) * 100;
+            setProgress(progressPercent);
+        }
+
+        // Countdown function
+        function countdown() {
+            if (totalSeconds <= 0) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+                
+                // Pulse animation on all time segments
+                minutesEl.classList.add('pulse');
+                secondsEl.classList.add('pulse');
+                
+                setTimeout(() => {
+                    minutesEl.classList.remove('pulse');
+                    secondsEl.classList.remove('pulse');
+                }, 500);
+                
+                showAlert('Time\'s up!', false);
+                
+                // Update button text
+                startPauseBtn.innerHTML = '<i>▶</i> Start';
+                // Change stop button to refresh
+                stopBtn.innerHTML = '<i>🔄</i> Refresh';
+                stopBtn.classList.remove('btn-stop');
+                stopBtn.classList.add('btn-refresh');
+                
+                // Change background color temporarily
+                document.body.style.background = 'linear-gradient(45deg, #e74c3c, #c0392b)';
+                
+                return;
+            }
+            
+            totalSeconds--;
+            updateDisplay();
+            
+            // Add pulse animation to the changing segment
+            if (totalSeconds % 60 === 59) {
+                minutesEl.classList.add('pulse');
+                setTimeout(() => minutesEl.classList.remove('pulse'), 300);
+            }
+        }
+
+        // Toggle start/pause
+        function toggleStartPause() {
+            if (totalSeconds <= 0) return;
+            
+            if (countdownInterval === null) {
+                // Start or resume
+                countdownInterval = setInterval(countdown, 1000);
+                isPaused = false;
+                startPauseBtn.innerHTML = '<i>⏸</i> Pause';
+                showAlert(isPaused ? 'Timer resumed' : 'Timer started', false);
+            } else {
+                // Pause
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+                isPaused = true;
+                startPauseBtn.innerHTML = '<i>▶</i> Resume';
+                showAlert('Timer paused', false);
+            }
+        }
+
+        // Stop/Refresh the timer
+        function stopOrRefreshTimer() {
+            // If timer is at zero (and button is "Refresh")
+            if (totalSeconds <= 0 || stopBtn.classList.contains('btn-refresh')) {
+                // Restore the original theme
+                resetTheme();
+                
+                // Reset to initial time
+                totalSeconds = initialTime;
+                updateDisplay();
+                
+                // Change button back to Stop
+                stopBtn.innerHTML = '<i>⏹</i> Stop';
+                stopBtn.classList.remove('btn-refresh');
+                stopBtn.classList.add('btn-stop');
+                
+                showAlert('Timer refreshed', false);
+            } else {
+                // Normal stop functionality
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+                isPaused = false;
+                startPauseBtn.innerHTML = '<i>▶</i> Start';
+                
+                // If timer was running and not at initial time
+                if (totalSeconds !== initialTime && totalSeconds !== 0) {
+                    showAlert('Timer stopped', false);
+                }
+                
+                totalSeconds = initialTime;
+                updateDisplay();
+            }
+        }
+
+        // Show the set time modal
+        function showSetTimeModal() {
+            setTimeModal.classList.add('show');
+            
+            // Set current values in inputs
+            const minutes = Math.floor(initialTime / 60);
+            const seconds = initialTime % 60;
+            
+            minutesInput.value = minutes;
+            secondsInput.value = seconds;
+        }
+
+        // Hide the set time modal
+        function hideSetTimeModal() {
+            setTimeModal.classList.remove('show');
+        }
+
+        // Set the time from the modal inputs
+        function setTime() {
+            const minutes = parseInt(minutesInput.value) || 0;
+            const seconds = parseInt(secondsInput.value) || 0;
+            
+            if (minutes === 0 && seconds === 0) {
+                showAlert('Please set a time greater than zero', true);
+                return;
+            }
+            
+            // Clear any existing timer
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+            isPaused = false;
+            startPauseBtn.innerHTML = '<i>▶</i> Start';
+            
+            // Ensure the stop button is in its correct state
+            if (stopBtn.classList.contains('btn-refresh')) {
+                stopBtn.innerHTML = '<i>⏹</i> Stop';
+                stopBtn.classList.remove('btn-refresh');
+                stopBtn.classList.add('btn-stop');
+                
+                // Restore theme if needed
+                resetTheme();
+            }
+            
+            // Set the new time
+            totalSeconds = minutes * 60 + seconds;
+            initialTime = totalSeconds;
+            updateDisplay();
+            
+            hideSetTimeModal();
+            showAlert('Time set successfully', false);
+        }
+
+        // Show alert message
+        function showAlert(message, isError) {
+            alertEl.textContent = message;
+            alertEl.className = 'alert';
+            
+            if (isError) {
+                alertEl.classList.add('error');
+            }
+            
+            alertEl.classList.add('show');
+            
+            setTimeout(() => {
+                alertEl.classList.remove('show');
+            }, 3000);
+        }
+
+        // Toggle theme selector
+        function toggleThemeSelector() {
+            themeSelector.classList.toggle('show');
+        }
+
+        // Set theme
+        function setTheme(theme) {
+            document.body.className = '';
+            currentTheme = theme;
+            
+            switch(theme) {
+                case 'dark':
+                    document.body.classList.add('dark-theme');
+                    break;
+                case 'light':
+                    document.body.classList.add('light-theme');
+                    break;
+                case 'purple':
+                    document.body.classList.add('purple-theme');
+                    break;
+                default:
+                    // Default blue theme
+                    break;
+            }
+            
+            // Hide theme selector
+            themeSelector.classList.remove('show');
+        }
+
+        // Reset to current theme
+        function resetTheme() {
+            document.body.className = '';
+            if (currentTheme !== 'blue') {
+                document.body.classList.add(`${currentTheme}-theme`);
+            }
+        }
+
+        // Event listeners
+        startPauseBtn.addEventListener('click', toggleStartPause);
+        stopBtn.addEventListener('click', stopOrRefreshTimer);
+        setBtn.addEventListener('click', showSetTimeModal);
+        
+        cancelSetTime.addEventListener('click', hideSetTimeModal);
+        confirmSetTime.addEventListener('click', setTime);
+        
+        // Theme toggle
+        themeToggle.addEventListener('click', toggleThemeSelector);
+        themeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                setTheme(option.getAttribute('data-theme'));
+            });
+        });
+        
+        // Close modal when clicking outside
+        setTimeModal.addEventListener('click', (e) => {
+            if (e.target === setTimeModal) {
+                hideSetTimeModal();
+            }
+        });
+
+        // Input validation
+        minutesInput.addEventListener('input', () => {
+            if (minutesInput.value > 99) minutesInput.value = 99;
+            if (minutesInput.value < 0) minutesInput.value = 0;
+        });
+        
+        secondsInput.addEventListener('input', () => {
+            if (secondsInput.value > 59) secondsInput.value = 59;
+            if (secondsInput.value < 0) secondsInput.value = 0;
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                // Space bar to start/pause
+                toggleStartPause();
+                e.preventDefault();
+            } else if (e.code === 'Escape') {
+                // Escape to stop/refresh
+                stopOrRefreshTimer();
+            }
+        });
+
+        // Initialize
+        createBubbles();
+        updateDisplay();
+    </script>
 </body>
 </html>
