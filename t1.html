@@ -181,6 +181,7 @@
             <button class="preset-btn active" data-time="30">30分钟</button>
             <button class="preset-btn" data-time="25">25分钟</button>
             <button class="preset-btn" data-time="15">15分钟</button>
+            <button class="preset-btn" data-time="10">10分钟</button>
             <button class="preset-btn" data-time="5">5分钟</button>
         </div>
     </div>
@@ -199,7 +200,9 @@
         let totalSeconds = 30 * 60;
         let currentSeconds = totalSeconds;
         let isRunning = false;
-        
+        let hideControlsTimeout;
+        let isControlsVisible = true;
+
         // DOM 元素
         const timeDisplay = document.getElementById('time');
         const startBtn = document.getElementById('start-btn');
@@ -229,10 +232,46 @@
             }
         }
         
+        // 隐藏控制按钮
+        function hideControls() {
+            if (!isRunning) return;
+            
+            document.querySelector('.controls').style.opacity = '0';
+            document.querySelector('.presets').style.opacity = '0';
+            isControlsVisible = false;
+            
+            // 增大时间显示
+            const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+            const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+            timeDisplay.style.fontSize = `${vh * 0.8}px`;
+        }
+
+        // 显示控制按钮
+        function showControls() {
+            document.querySelector('.controls').style.opacity = '1';
+            document.querySelector('.presets').style.opacity = '1';
+            isControlsVisible = true;
+            
+            // 恢复时间显示大小
+            const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+            const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+            if (vw > vh) {
+                timeDisplay.style.fontSize = `${vh * 0.6}px`;
+            }
+            
+            // 重置隐藏计时器
+            if (isRunning) {
+                clearTimeout(hideControlsTimeout);
+                hideControlsTimeout = setTimeout(hideControls, 5000);
+            }
+        }
+
         // 开始/暂停计时器
         function toggleTimer() {
             if (isRunning) {
                 clearInterval(timer);
+                clearTimeout(hideControlsTimeout);
+                showControls();
                 startBtn.textContent = '继续';
             } else {
                 timer = setInterval(() => {
@@ -245,9 +284,29 @@
                     }
                 }, 1000);
                 startBtn.textContent = '暂停';
+                hideControlsTimeout = setTimeout(hideControls, 5000);
             }
             isRunning = !isRunning;
         }
+
+        // 添加点击事件监听器
+        document.addEventListener('click', () => {
+            if (isRunning && !isControlsVisible) {
+                showControls();
+            }
+        });
+
+        // 添加CSS过渡效果
+        const style = document.createElement('style');
+        style.textContent = `
+            .controls, .presets {
+                transition: opacity 0.3s ease;
+            }
+            .time-display {
+                transition: font-size 0.3s ease;
+            }
+        `;
+        document.head.appendChild(style);
         
         // 重置计时器
         function resetTimer() {
@@ -265,7 +324,7 @@
             timeDisplay.classList.add('pulse');
             
             // 播放提示音
-            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj2a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PurWYcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66RcFApGn+DutmocBTOL0/HQgTMGHm7A7+OZSA0PVqzn+LBqGgU+ltryznsuBSF6yfDekEALElyx6OynXhQIPJPW8dd/NgcYYrju+6JUEAxKouDtul4IPUmDuuPMlGMdFEONt9/q0aRAChZVkrTN7cqIxrlTAAAolNHz2YxFDRdcqeTzuGkfCjuQ0vHXgTkHGGS57/uiVBALSqPh7bpdBztJg7rixpRkHRRDjbff6tGrPgoWVZK0z+3KiMa5UwEAJ5TQ89mMRQ0XW6jj87dpHwo6kNHw14E6BxhluO77o1URC0Oi4e27XQc8SYO64saUYx0VQ4633erRbBkNUGuUkcTnfXx+ok0EACNpseDsrGYcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66RcFApGn+DutmocBTOL0/HQgTMGHm7A7+OZSA0PVqzn+LBqGgU+ltryznsuBSF6yfDekEALElyx6OynXhQIPJPW8dd/NgcYYrju+6JUEAxKouDtul4IPUmDuuPMlGMdFEONt9/q0aRAChZVkrTN7cqIxrlTAAAolNHz2YxFDRdbrqDQk1sQFWlnO2S95OJ2MQxkfYF83LdPEkdjcpJ90J5NCTdwfpB6yrpVFS1qd4pz0rJZGzFyf359zrVQFElpco910KFODDVxfX58y7NSFUppcopyz7BXGjJyf3x9zLVPFUlpco900qJLDDN1gIB7zLVSFklqc4t00rJWGjFyf359z7ZMEU5lb4RxzrBZGC5teoFzy7lVFkxmcIVy0LJbGjJyf3x9z7ZNFEppcohzz7FYGzJ2gn99zrVTFklockl1z6ZECzdwfX+Tz7tKDkBZd5CSw7M9BihzgZO2x5QzCD1jg66fv54xTUQHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=');
+            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj2a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PurWYcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66RcFApGn+DutmocBTOL0/HQgTMGHm7A7+OZSA0PVqzn+LBqGgU+ltryznsuBSF6yfDekEALElyx6OynXhQIPJPW8dd/NgcYYrju+6JUEAxKouDtul4IPUmDuuPMlGMdFEONt9/q0aRAChZVkrTN7cqIxrlTAAAolNHz2YxFDRdcqeTzuGkfCjuQ0vHXgTkHGGS57/uiVBALSqPh7bpdBztJg7rixpRkHRRDjbff6tGrPgoWVZK0z+3KiMa5UwEAJ5TQ89mMRQ0XW6jj87dpHwo6kNHw14E6BxhluO77o1URC0Oi4e27XQc8SYO64saUYx0VQ4633erRbBkNUGuUkcTnfXx+ok0EACNpseDsrGYcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66RcFApGn+DutmocBTOL0/HQgTMGHm7A7+OZSA0PVqzn+LBqGgU+ltryznsuBSF6yfDekEALElyx6OynXhQIPJPW8dd/NgcYYrju+6JUEAxKouDtul4IPUmDuuPMlGMdFEONt9/q0aRAChZVkrTN7cqIxrlTAAAolNHz2YxFDRdbrqDQk1sQFWlnO2S95OJ2MQxkfYF83LdPEkdjcpJ90J5NCTdwfpB6yrpVFS1qd4pz0rJZGzFyf359zrVQFElpco910KFODDVxfX58y7NSFUppcopyz7BXGjJyf3x9zLVPFUlpco900qJLDDN1gIB7zLVSFklqc4t00rJWGjFyf359z7ZMEU5lb4RxzrBZGC5teoFzy7lVFkxmcIVy0LJbGjJyf3x9z7ZNFEppcohzz7FYGzJ2gn99zrVTFklockl1z6ZECzdwfX+Tz7tKDkBZd5CSw7M9BihzgZO2x5QzCD1jg66fv54xTUQHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=');
             audio.play();
         }
         
