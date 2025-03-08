@@ -94,6 +94,13 @@
             -webkit-text-fill-color: transparent;
             position: relative;
             text-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
         .time-label {
@@ -562,9 +569,13 @@
             document.querySelector('.theme-selector').classList.remove('show');
             isControlsVisible = false;
             
-            // 增大时间显示
+            // 增大时间显示，考虑中文字符宽度
             const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
-            timeDisplay.style.fontSize = `${vh * 0.8}px`;
+            const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+            const fontSize = Math.min(vh * 0.6, vw * 0.4);
+            timeDisplay.style.fontSize = `${fontSize}px`;
+            timeDisplay.style.width = '100%';
+            timeDisplay.style.textAlign = 'center';
         }
 
         // 显示控制按钮
@@ -574,9 +585,13 @@
             document.querySelector('.theme-toggle').style.opacity = '1';
             isControlsVisible = true;
             
-            // 恢复时间显示大小
+            // 恢复时间显示大小，考虑中文字符宽度
             const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
-            timeDisplay.style.fontSize = `${vh * 0.6}px`;
+            const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+            const fontSize = Math.min(vh * 0.5, vw * 0.3);
+            timeDisplay.style.fontSize = `${fontSize}px`;
+            timeDisplay.style.width = '100%';
+            timeDisplay.style.textAlign = 'center';
             
             // 重置隐藏计时器
             if (isRunning) {
@@ -649,16 +664,22 @@
             // 显示控制按钮
             showControls();
             
-            // 5秒后放大字体
+            // 5秒后放大字体，但考虑中文字符宽度，使用更合适的缩放比例
             setTimeout(() => {
                 if (!isRunning) {
                     const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
-                    timeDisplay.style.fontSize = `${vh * 0.8}px`;
+                    const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+                    // 对于中文文本，使用较小的缩放比例，并考虑屏幕宽度
+                    const fontSize = Math.min(vh * 0.6, vw * 0.4);
+                    timeDisplay.style.fontSize = `${fontSize}px`;
+                    // 确保文本居中显示
+                    timeDisplay.style.width = '100%';
+                    timeDisplay.style.textAlign = 'center';
                 }
             }, 5000);
             
             // 播放提示音
-            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj2a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PurWYcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66RcFApGn+DutmocBTOL0/HQgTMGHm7A7+OZSA0PVqzn+LBqGgU+ltryznsuBSF6yfDekEALElyx6OynXhQIPJPW8dd/NgcYYrju+6JUEAxKouDtul4IPUmDuuPMlGMdFEONt9/q0aRAChZVkrTN7cqIxrlTAAAolNHz2YxFDRdcqeTzuGkfCjuQ0vHXgTkHGGS57/uiVBALSqPh7bpdBztJg7rixpRkHRRDjbff6tGrPgoWVZK0z+3KiMa5UwEAJ5TQ89mMRQ0XW6jj87dpHwo6kNHw14E6BxhluO77o1URC0Oi4e27XQc8SYO64saUYx0VQ4633erRbBkNUGuUkcTnfXx+ok0EACNpseDsrGYcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66RcFApGn+DutmocBTOL0/HQgTMGHm7A7+OZSA0PVqzn+LBqGgU+ltryznsuBSF6yfDekEALElyx6OynXhQIPJPW8dd/NgcYYrju+6JUEAxKouDtul4IPUmDuuPMlGMdFEONt9/q0aRAChZVkrTN7cqIxrlTAAAolNHz2YxFDRdbrqDQk1sQFWlnO2S95OJ2MQxkfYF83LdPEkdjcpJ90J5NCTdwfpB6yrpVFS1qd4pz0rJZGzFyf359zrVQFElpco910KFODDVxfX58y7NSFUppcopyz7BXGjJyf3x9zLVPFUlpco900qJLDDN1gIB7zLVSFklqc4t00rJWGjFyf359z7ZMEU5lb4RxzrBZGC5teoFzy7lVFkxmcIVy0LJbGjJyf3x9z7ZNFEppcohzz7FYGzJ2gn99zrVTFklockl1z6ZECzdwfX+Tz7tKDkBZd5CSw7M9BihzgZO2x5QzCD1jg66fv54xTUQHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=');
+            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj2a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PurWYcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66RcFApGn+DutmocBTOL0/HQgTMGHm7A7+OZSA0PVqzn+LBqGgU+ltryznsuBSF6yfDekEALElyx6OynXhQIPJPW8dd/NgcYYrju+6JUEAxKouDtul4IPUmDuuPMlGMdFEONt9/q0aRAChZVkrTN7cqIxrlTAAAolNHz2YxFDRdcqeTzuGkfCjuQ0vHXgTkHGGS57/uiVBALSqPh7bpdBztJg7rixpRkHRRDjbff6tGrPgoWVZK0z+3KiMa5UwEAJ5TQ89mMRQ0XW6jj87dpHwo6kNHw14E6BxhluO77o1URC0Oi4e27XQc8SYO64saUYx0VQ4633erRbBkNUGuUkcTnfXx+ok0EACNpseDsrGYcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66RcFApGn+DutmocBTOL0/HQgTMGHm7A7+OZSA0PVqzn+LBqGgU+ltryznsuBSF6yfDekEALElyx6OynXhQIPJPW8dd/NgcYYrju+6JUEAxKouDtul4IPUmDuuPMlGMdFEONt9/q0aRAChZVkrTN7cqIxrlTAAAolNHz2YxFDRdbrqDQk1sQFWlnO2S95OJ2MQxkfYF83LdPEkdjcpJ90J5NCTdwfpB6yrpVFS1qd4pz0rJZGzFyf359zrVQFElpco910KFODDVxfX58y7NSFUppcopyz7BXGjJyf3x9zLVPFUlpco900qJLDDN1gIB7zLVSFklqc4t00rJWGjFyf359z7ZMEU5lb4RxzrBZGC5teoFzy7lVFkxmcIVy0LJbGjJyf3x9z7ZNFEppcohzz7FYGzJ2gn99zrVTFklockl1z6ZECzdwfX+Tz7tKDkBZd5CSw7M9BihzgZO2x5QzCD1jg66fv54xTUQHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=');
             audio.play();
         }
         
@@ -718,13 +739,22 @@
         window.addEventListener('resize', () => {
             // 动态调整字体大小以适应不同尺寸的屏幕
             const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+            const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
             
-            // 根据是否显示控制按钮来调整字体大小
+            // 根据是否显示控制按钮来调整字体大小，同时考虑中文字符宽度
             if (isControlsVisible) {
-                timeDisplay.style.fontSize = `${vh * 0.6}px`;
+                // 正常显示模式下，使用较小的字体
+                const fontSize = Math.min(vh * 0.5, vw * 0.3);
+                timeDisplay.style.fontSize = `${fontSize}px`;
             } else {
-                timeDisplay.style.fontSize = `${vh * 0.8}px`;
+                // 放大模式下，使用较大的字体，但仍考虑屏幕宽度限制
+                const fontSize = Math.min(vh * 0.6, vw * 0.4);
+                timeDisplay.style.fontSize = `${fontSize}px`;
             }
+            
+            // 确保文本始终居中显示
+            timeDisplay.style.width = '100%';
+            timeDisplay.style.textAlign = 'center';
         });
     </script>
 </body>
