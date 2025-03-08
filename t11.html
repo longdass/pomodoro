@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>专业倒计时 | 高效时间管理工具</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --accent-color: #4fc3dc;
+            --light-color: #e9f5fb;
+            --dark-color: #333;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --info-color: #3498db;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', 'Noto Sans SC', sans-serif;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        body {
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+            color: var(--light-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.5s ease;
+        }
+        
+        body.theme-blue {
+            background: linear-gradient(45deg, #4a6fa5, #166088);
+        }
+        
+        body.theme-dark {
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+        }
+        
+        body.theme-light {
+            background: linear-gradient(45deg, #8bd8bd, #3da5d9);
+        }
+        
+        body.theme-purple {
+            background: linear-gradient(45deg, #5f27cd, #9b59b6);
+        }
+        
+        .container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .timer-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .progress-ring {
+            position: absolute;
+            width: 110%;
+            height: 110%;
+            transform: rotate(-90deg);
+        }
+        
+        .progress-ring circle {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.3s ease;
+        }
+        
+        .progress-ring .background-circle {
+            stroke: rgba(255, 255, 255, 0.1);
+        }
+        
+        .progress-ring .progress-circle {
+            stroke: var(--accent-color);
+            stroke-dasharray: 1130;
+            stroke-dashoffset: 0;
+        }
+        
+        .time-display {
+            font-size: 35vw;
+            font-weight: 700;
+            line-height: 1;
+            text-align: center;
+            z-index: 10;
+            letter-spacing: -2px;
+            background: linear-gradient(to bottom, var(--light-color), rgba(255, 255, 255, 0.7));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .time-label {
+            position: absolute;
+            bottom: -30px;
+            font-size: 1rem;
+            font-weight: 300;
+            opacity: 0.7;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 30px;
+            display: flex;
+            gap: 20px;
+            z-index: 20;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border-radius: 50px;
+            border: none;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.15);
+            color: var(--light-color);
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.4s ease;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        #start-btn {
+            background-color: var(--success-color);
+        }
+        
+        #reset-btn {
+            background-color: var(--danger-color);
+        }
+        
+        .presets {
+            position: absolute;
+            top: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 20;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 90%;
+        }
+        
+        .preset-btn {
+            padding: 8px 18px;
+            border-radius: 20px;
+            background-color: rgba(255, 255, 255, 0.15);
+            color: var(--light-color);
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+        }
+        
+        .preset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .preset-btn.active {
+            background-color: var(--accent-color);
+            color: var(--dark-color);
+            font-weight: 500;
+        }
+        
+        /* 旋转屏幕提示 */
+        .rotation-notice {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+            z-index: 1000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .rotation-notice svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            animation: rotate 2s infinite;
+        }
+        
+        .rotation-notice p {
+            font-size: 24px;
+            max-width: 300px;
+            font-weight: 300;
+            line-height: 1.5;
+            margin-top: 10px;
+            color: var(--light-color);
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(90deg); }
+            100% { transform: rotate(0deg); }
+        }
+        
+        /* 媒体查询确保横屏显示 */
+        @media (orientation: portrait) {
+            .container {
+                display: none;
+            }
+            .rotation-notice {
+                display: flex;
+            }
+        }
+        
+        /* 确保横屏时填充整个屏幕 */
+        @media (orientation: landscape) {
+            .container {
+                display: flex;
+            }
+            .rotation-notice {
+                display: none;
+            }
+        }
+        
+        /* 动画效果 */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        /* 主题切换按钮 */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--light-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 30;
+            transition: transform 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.1);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .theme-toggle:hover {
+            transform: rotate(30deg);
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .theme-selector {
+            position: absolute;
+            top: 20px;
+            right: 70px;
+            display: flex;
+            gap: 10px;
+            opacity: 0;
+            transform: translateX(20px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 30;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 8px;
+            border-radius: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .theme-selector.show {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
+        }
+        
+        .theme-option {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .theme-option:hover {
+            transform: scale(1.2);
+        }
+        
+        .theme-blue {
+            background: linear-gradient(45deg, #4a6fa5, #166088);
+        }
+        
+        .theme-dark {
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+        }
+        
+        .theme-light {
+            background: linear-gradient(45deg, #8bd8bd, #3da5d9);
+        }
+        
+        .theme-purple {
+            background: linear-gradient(45deg, #5f27cd, #9b59b6);
+        }
+        
+        /* 浮动气泡背景 */
+        .floating-bubbles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+        
+        .bubble {
+            position: absolute;
+            bottom: -100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: rise 15s infinite linear;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3), inset 0 0 10px rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(1px);
+        }
+        
+        @keyframes rise {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+                border-radius: 0;
+            }
+            100% {
+                transform: translateY(-1000px) rotate(720deg);
+                opacity: 0;
+                border-radius: 50%;
+            }
+        }
+        
+        /* 通知提示 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            opacity: 0;
+            transition: all 0.5s ease;
+            backdrop-filter: blur(5px);
+        }
+        
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-bubbles">
+        <!-- 气泡将通过JavaScript动态添加 -->
+    </div>
+
+    <button class="theme-toggle" id="themeToggle">🎨</button>
+    <div class="theme-selector" id="themeSelector">
+        <div class="theme-option theme-blue" data-theme="blue"></div>
+        <div class="theme-option theme-dark" data-theme="dark"></div>
+        <div class="theme-option theme-light" data-theme="light"></div>
+        <div class="theme-option theme-purple" data-theme="purple"></div>
+    </div>
+
+    <div class="container">
+        <div class="timer-wrapper">
+            <svg class="progress-ring" width="400" height="400">
+                <circle class="background-circle" cx="200" cy="200" r="180"/>
+                <circle class="progress-circle" cx="200" cy="200" r="180" id="progressRing"/>
+            </svg>
+            <div class="time-display" id="time">30:00</div>
+            <div class="time-label">剩余时间</div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="start-btn">开始</button>
+            <button class="btn" id="reset-btn">重置</button>
+        </div>
+        
+        <div class="presets">
+            <button class="preset-btn active" data-time="30">30分钟</button>
+            <button class="preset-btn" data-time="25">25分钟</button>
+            <button class="preset-btn" data-time="15">15分钟</button>
+            <button class="preset-btn" data-time="10">10分钟</button>
+            <button class="preset-btn" data-time="5">5分钟</button>
+        </div>
+    </div>
+    
+    <div class="rotation-notice">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+            <line x1="12" y1="18" x2="12" y2="18.01"></line>
+        </svg>
+        <p>请将手机旋转至横屏模式以获得最佳体验</p>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // 全局变量
+        let timer;
+        let totalSeconds = 30 * 60;
+        let currentSeconds = totalSeconds;
+        let isRunning = false;
+        let hideControlsTimeout;
+        let isControlsVisible = true;
+
+        // 主题切换相关
+        const themeToggle = document.getElementById('themeToggle');
+        const themeSelector = document.getElementById('themeSelector');
+        const themeOptions = document.querySelectorAll('.theme-option');
+
+        // 创建浮动气泡
+        function createBubbles() {
+            const container = document.querySelector('.floating-bubbles');
+            const bubbleCount = 15;
+
+            for (let i = 0; i < bubbleCount; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                
+                const size = Math.random() * 60 + 20;
+                const left = Math.random() * 100;
+                const delay = Math.random() * 15;
+                
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                bubble.style.left = `${left}%`;
+                bubble.style.animationDelay = `${delay}s`;
+                
+                container.appendChild(bubble);
+            }
+        }
+
+        // 主题切换功能
+        themeToggle.addEventListener('click', () => {
+            themeSelector.classList.toggle('show');
+        });
+
+        themeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const theme = option.dataset.theme;
+                document.body.className = `theme-${theme}`;
+                themeSelector.classList.remove('show');
+                showNotification(`已切换到${theme === 'dark' ? '深色' : theme === 'light' ? '浅色' : theme === 'blue' ? '蓝色' : '紫色'}主题`);
+            });
+        });
+
+        // 点击其他地方关闭主题选择器
+        document.addEventListener('click', (e) => {
+            if (!themeToggle.contains(e.target) && !themeSelector.contains(e.target)) {
+                themeSelector.classList.remove('show');
+            }
+        });
+
+        // DOM 元素
+        const timeDisplay = document.getElementById('time');
+        const startBtn = document.getElementById('start-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const presetBtns = document.querySelectorAll('.preset-btn');
+        const progressRing = document.getElementById('progressRing');
+        const notification = document.getElementById('notification');
+        
+        // 显示通知
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2000);
+        }
+        
+        // 更新进度环
+        function updateProgressRing() {
+            const progress = currentSeconds / totalSeconds;
+            const circumference = 2 * Math.PI * 180;
+            const offset = circumference * (1 - progress);
+            progressRing.style.strokeDasharray = `${circumference} ${circumference}`;
+            progressRing.style.strokeDashoffset = offset;
+        }
+        
+        // 强制横屏
+        function lockOrientation() {
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(function(error) {
+                    console.log('无法锁定屏幕方向:', error);
+                });
+            }
+        }
+        
+        // 更新显示时间
+        function updateDisplay() {
+            const minutes = Math.floor(currentSeconds / 60);
+            const seconds = currentSeconds % 60;
+            timeDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            updateProgressRing();
+            
+            // 在最后10秒时添加脉动效果
+            if (currentSeconds <= 10 && currentSeconds > 0) {
+                timeDisplay.classList.add('pulse');
+            } else {
+                timeDisplay.classList.remove('pulse');
+            }
+        }
+        
+        // 隐藏控制按钮
+        function hideControls() {
+            if (!isRunning) return;
+            
+            document.querySelector('.controls').style.opacity = '0';
+            document.querySelector('.presets').style.opacity = '0';
+            isControlsVisible = false;
+            
+            // 增大时间显示
+            const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+            timeDisplay.style.fontSize = `${vh * 0.8}px`;
+        }
+
+        // 显示控制按钮
+        function showControls() {
+            document.querySelector('.controls').style.opacity = '1';
+            document.querySelector('.presets').style.opacity = '1';
+            isControlsVisible = true;
+            
+            // 恢复时间显示大小
+            const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+            timeDisplay.style.fontSize = `${vh * 0.6}px`;
+            
+            // 重置隐藏计时器
+            if (isRunning) {
+                clearTimeout(hideControlsTimeout);
+                hideControlsTimeout = setTimeout(hideControls, 5000);
+            }
+        }
+
+        // 开始/暂停计时器
+        function toggleTimer() {
+            if (isRunning) {
+                clearInterval(timer);
+                clearTimeout(hideControlsTimeout);
+                showControls();
+                startBtn.textContent = '继续';
+                showNotification('计时已暂停');
+            } else {
+                timer = setInterval(() => {
+                    if (currentSeconds > 0) {
+                        currentSeconds--;
+                        updateDisplay();
+                    } else {
+                        clearInterval(timer);
+                        timerComplete();
+                    }
+                }, 1000);
+                startBtn.textContent = '暂停';
+                hideControlsTimeout = setTimeout(hideControls, 5000);
+                showNotification('计时开始');
+            }
+            isRunning = !isRunning;
+        }
+
+        // 添加点击事件监听器
+        document.addEventListener('click', () => {
+            if (isRunning && !isControlsVisible) {
+                showControls();
+            }
+        });
+
+        // 添加CSS过渡效果
+        const style = document.createElement('style');
+        style.textContent = `
+            .controls, .presets {
+                transition: opacity 0.3s ease;
+            }
+            .time-display {
+                transition: font-size 0.3s ease;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // 重置计时器
+        function resetTimer() {
+            clearInterval(timer);
+            currentSeconds = totalSeconds;
+            isRunning = false;
+            updateDisplay();
+            startBtn.textContent = '开始';
+            timeDisplay.classList.remove('pulse');
+            showNotification('计时已重置');
+        }
+        
+        // 计时结束
+        function timerComplete() {
+            timeDisplay.textContent = "时间到!";
+            timeDisplay.classList.add('pulse');
+            showNotification('时间到！');
+            
+            // 播放提示音
+            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj2a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PurWYcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66RcFApGn+DutmocBTOL0/HQgTMGHm7A7+OZSA0PVqzn+LBqGgU+ltryznsuBSF6yfDekEALElyx6OynXhQIPJPW8dd/NgcYYrju+6JUEAxKouDtul4IPUmDuuPMlGMdFEONt9/q0aRAChZVkrTN7cqIxrlTAAAolNHz2YxFDRdcqeTzuGkfCjuQ0vHXgTkHGGS57/uiVBALSqPh7bpdBztJg7rixpRkHRRDjbff6tGrPgoWVZK0z+3KiMa5UwEAJ5TQ89mMRQ0XW6jj87dpHwo6kNHw14E6BxhluO77o1URC0Oi4e27XQc8SYO64saUYx0VQ4633erRbBkNUGuUkcTnfXx+ok0EACNpseDsrGYcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66RcFApGn+DutmocBTOL0/HQgTMGHm7A7+OZSA0PVqzn+LBqGgU+ltryznsuBSF6yfDekEALElyx6OynXhQIPJPW8dd/NgcYYrju+6JUEAxKouDtul4IPUmDuuPMlGMdFEONt9/q0aRAChZVkrTN7cqIxrlTAAAolNHz2YxFDRdbrqDQk1sQFWlnO2S95OJ2MQxkfYF83LdPEkdjcpJ90J5NCTdwfpB6yrpVFS1qd4pz0rJZGzFyf359zrVQFElpco910KFODDVxfX58y7NSFUppcopyz7BXGjJyf3x9zLVPFUlpco900qJLDDN1gIB7zLVSFklqc4t00rJWGjFyf359z7ZMEU5lb4RxzrBZGC5teoFzy7lVFkxmcIVy0LJbGjJyf3x9z7ZNFEppcohzz7FYGzJ2gn99zrVTFklockl1z6ZECzdwfX+Tz7tKDkBZd5CSw7M9BihzgZO2x5QzCD1jg66fv54xTUQHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=');
+            audio.play();
+        }
+        
+        // 设置预设时间
+        function setPresetTime(minutes) {
+            totalSeconds = minutes * 60;
+            currentSeconds = totalSeconds;
+            resetTimer();
+            
+            // 更新选中状态
+            presetBtns.forEach(btn => {
+                if (parseInt(btn.dataset.time) === minutes) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            showNotification(`已设置${minutes}分钟`);
+        }
+        
+        // 全屏模式
+        function requestFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`全屏请求错误: ${err.message}`);
+                });
+            }
+        }
+        
+        // 事件监听
+        startBtn.addEventListener('click', toggleTimer);
+        resetBtn.addEventListener('click', resetTimer);
+        
+        presetBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                setPresetTime(parseInt(btn.dataset.time));
+            });
+        });
+        
+        document.addEventListener('click', requestFullscreen);
+        
+        // 初始化
+        window.addEventListener('load', () => {
+            lockOrientation();
+            updateDisplay();
+            // 创建浮动气泡
+            createBubbles();
+            // 设置默认主题
+            document.body.classList.add('theme-dark');
+            // 尝试自动进入全屏模式
+            requestFullscreen();
+            // 显示欢迎通知
+            showNotification('欢迎使用专业倒计时工具');
+        });
+        
+        // 根据设备方向调整字体大小
+        window.addEventListener('resize', () => {
+            // 动态调整字体大小以适应不同尺寸的屏幕
+            const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+            
+            // 根据是否显示控制按钮来调整字体大小
+            if (isControlsVisible) {
+                timeDisplay.style.fontSize = `${vh * 0.6}px`;
+            } else {
+                timeDisplay.style.fontSize = `${vh * 0.8}px`;
+            }
+        });
+    </script>
+</body>
+</html>
