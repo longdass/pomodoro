@@ -1,0 +1,53 @@
+{
+  "name": "专注时钟 - 专业倒计时工具",
+  "short_name": "专注时钟",
+  "description": "一个简洁高效的横屏倒计时和番茄钟工具，支持离线使用。",
+  "start_url": "/", // PWA 的启动入口，指向 index.html 所在的目录
+  "display": "fullscreen", // 或 "standalone"，fullscreen 更沉浸
+  "orientation": "landscape", // 强制横屏
+  "background_color": "#1a1a2e", // 应用启动时的背景色 (匹配深色主题)
+  "theme_color": "#1a1a2e", // 浏览器 UI 的主题色 (匹配深色主题)
+  "icons": [
+    {
+      "src": "icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable" // 支持自适应图标
+    },
+    {
+      "src": "icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
